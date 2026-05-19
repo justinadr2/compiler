@@ -1,0 +1,4 @@
+set x 3;
+set y 4;
+set z 15 - (x * y);
+get z + 8;
