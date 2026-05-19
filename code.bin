@@ -1,4 +1,4 @@
-set x 3;
-set y 4;
-set z 15 - (x * y);
-get z + 8;
+set a 3;
+set b 4;
+set c 20 - (a * b);
+get c + 3;
