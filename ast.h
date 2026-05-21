@@ -1,12 +1,11 @@
-#ifndef AST_H
-#define AST_H
+#pragma once
 
 #include <stddef.h>
 #include <string>
 
 using namespace std;
 
-enum class NodeType {
+enum class ASTNodeType {
     NODE_CONSTANT,
     NODE_IDENTIFIER,
     NODE_BINARY_OP,
@@ -16,27 +15,23 @@ enum class NodeType {
 class ASTNode
 {
 public:
-    NodeType type;
+    ASTNodeType type;
     union {
         double val;
-        char name[64];
+        char name[32];
         char op;
     } data;
 
     ASTNode* left;
     ASTNode* right;
 
-    ~ASTNode()
-    {
-        delete left;
-        delete right;
-    }
-};
+    ASTNode() {}
 
-ASTNode* CreateNode(NodeType type);
+    ASTNode(ASTNodeType type);
+
+    ~ASTNode();
+};
 
 ASTNode* CreateNumberNode(double val);
 ASTNode* CreateOpNode(char op, ASTNode* left, ASTNode* right);
 ASTNode* CreateIdentifierNode(const string& name);
-
-#endif

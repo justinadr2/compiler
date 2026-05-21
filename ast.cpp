@@ -4,27 +4,29 @@
 #include <string.h>
 #include <stdio.h>
 
-ASTNode* CreateNode(NodeType type)
+ASTNode::ASTNode(ASTNodeType type)
 {
-    ASTNode* node = new ASTNode;
-    
-    node->type = type;
-    node->left = NULL;
-    node->right = NULL;
-    
-    return node;
+    this->type = type;
+    this->left = NULL;
+    this->right = NULL;
+}
+
+ASTNode::~ASTNode()
+{
+    delete left;
+    delete right;
 }
 
 ASTNode* CreateNumberNode(double val)
 {
-    ASTNode* node = CreateNode(NodeType::NODE_CONSTANT);
+    ASTNode* node = new ASTNode(ASTNodeType::NODE_CONSTANT);
     node->data.val = val;
     return node;
 }
 
 ASTNode* CreateOpNode(char op, ASTNode* left, ASTNode* right)
 {
-    ASTNode* node = CreateNode(NodeType::NODE_BINARY_OP);
+    ASTNode* node = new ASTNode(ASTNodeType::NODE_BINARY_OP);
     node->data.op = op;
     node->left = left;
     node->right = right;
@@ -33,7 +35,7 @@ ASTNode* CreateOpNode(char op, ASTNode* left, ASTNode* right)
 
 ASTNode* CreateIdentifierNode(const string& name)
 {
-    ASTNode* node = CreateNode(NodeType::NODE_IDENTIFIER);
+    ASTNode* node = new ASTNode(ASTNodeType::NODE_IDENTIFIER);
     strncpy(node->data.name, name.c_str(), 63);
     return node;
 }

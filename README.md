@@ -1,3 +1,3 @@
 
 Use:
-D:\compiler>run.bat
+D:\compiler>main
