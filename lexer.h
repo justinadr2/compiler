@@ -10,7 +10,7 @@ enum class TokenType
     PLUS, MINUS, STAR, SLASH, SEMICOLON, EQUAL,
     LEFT_PAREN, RIGHT_PAREN,
     IDENTIFIER, NUMBER,
-    SET, GET,
+    SET, OUT,
     END_OF_FILE
 };
 

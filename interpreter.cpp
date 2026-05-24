@@ -12,10 +12,10 @@ double Evaluate(ASTNode* node)
     if (!node)
         return 0.0;
 
-    if (node->type == ASTNodeType::NODE_CONSTANT)
+    if (node->type == ASTNodeType::CONSTANT)
         return node->data.val;
 
-    if (node->type == ASTNodeType::NODE_IDENTIFIER)
+    if (node->type == ASTNodeType::IDENTIFIER)
     {
         string varname(node->data.name);
         if (symbolTable.find(varname) == symbolTable.end())
@@ -26,7 +26,7 @@ double Evaluate(ASTNode* node)
         return symbolTable[varname];
     }
 
-    if (node->type == ASTNodeType::NODE_ASSIGNEMENT)
+    if (node->type == ASTNodeType::ASSIGNEMENT)
     {
         double val = Evaluate(node->right);
         string varname(node->left->data.name);
@@ -34,7 +34,7 @@ double Evaluate(ASTNode* node)
         return val;
     }
 
-    if (node->type == ASTNodeType::NODE_BINARY_OP)
+    if (node->type == ASTNodeType::BINARY_OP)
     {
         double left_val = Evaluate(node->left);
         double right_val = Evaluate(node->right);

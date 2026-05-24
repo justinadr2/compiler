@@ -6,10 +6,10 @@
 using namespace std;
 
 enum class ASTNodeType {
-    NODE_CONSTANT,
-    NODE_IDENTIFIER,
-    NODE_BINARY_OP,
-    NODE_ASSIGNEMENT
+    CONSTANT,
+    IDENTIFIER,
+    BINARY_OP,
+    ASSIGNEMENT
 };
 
 class ASTNode
@@ -25,9 +25,8 @@ public:
     ASTNode* left;
     ASTNode* right;
 
-    ASTNode() {}
-
     ASTNode(ASTNodeType type);
+    ASTNode(ASTNodeType type, ASTNode* left, ASTNode* right);
 
     ~ASTNode();
 };

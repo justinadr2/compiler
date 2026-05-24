@@ -71,8 +71,8 @@ void Lexer::scan()
 
             if (text == "set") 
                 tokens.push_back({TokenType::SET, text});
-            else if (text == "get") 
-                tokens.push_back({TokenType::GET, text});
+            else if (text == "out") 
+                tokens.push_back({TokenType::OUT, text});
             else 
                 tokens.push_back({TokenType::IDENTIFIER, text});
         }

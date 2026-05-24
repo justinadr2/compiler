@@ -49,9 +49,12 @@ ASTNode* Parser::primary()
     }
     if (check(TokenType::IDENTIFIER))
     {
-        ASTNode* node = new ASTNode(ASTNodeType::NODE_IDENTIFIER);
+        ASTNode* node = new ASTNode(ASTNodeType::IDENTIFIER);
         string name = advance().lexme;
-        for(size_t i=0; i<63 && i<name.length(); ++i) node->data.name[i] = name[i];
+
+        for(size_t i = 0; i < 63 && i < name.length(); i++) 
+            node->data.name[i] = name[i];
+
         node->data.name[min(name.length(), (size_t)63)] = '\0';
         return node;
     }
@@ -103,7 +106,8 @@ void Parser::parseAndExecute()
             advance();
             Token var = consume(TokenType::IDENTIFIER, "Expected variable name");
             
-            ASTNode* left = new ASTNode(ASTNodeType::NODE_IDENTIFIER);
+            ASTNode* left = new ASTNode(ASTNodeType::IDENTIFIER);
+            
             for (size_t i = 0; i < 63 && i < var.lexme.length(); i++) 
                 left->data.name[i] = var.lexme[i];
             
@@ -112,14 +116,14 @@ void Parser::parseAndExecute()
             ASTNode* right = expression();
             consume(TokenType::SEMICOLON, "Expected ';'");
 
-            ASTNode* stmt = new ASTNode(ASTNodeType::NODE_ASSIGNEMENT);
+            ASTNode* stmt = new ASTNode(ASTNodeType::ASSIGNEMENT);
             stmt->left = left;
             stmt->right = right;
             
             Evaluate(stmt);
             delete stmt;
         }
-        else if (check(TokenType::GET)) 
+        else if (check(TokenType::OUT)) 
         {
             advance();
             ASTNode* expr = expression();

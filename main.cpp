@@ -35,6 +35,8 @@
 #include <vector>
 #include <algorithm>
 
+#include <intrin.h>
+
 #include "ast.h"
 #include "interpreter.h"
 #include "lexer.h"
@@ -57,6 +59,7 @@ string ReadFile(string filename)
     return code;
 }
 
+
 int main()
 {
     string filename = "code.bin";
@@ -67,4 +70,6 @@ int main()
     
     Parser parser(lexer.tokens);
     parser.parseAndExecute();
+
+    uint64_t end = __rdtsc();
 }  

@@ -1,7 +1,6 @@
 
 
-set x 3;
-set y 4;
+set x 10;
+set y 13;
 
-set z x * y;
-get z + (10 - 5);
+set z (x + y) * 2;out z;
