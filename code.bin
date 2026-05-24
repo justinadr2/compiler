@@ -1,6 +1,8 @@
 
 
-set x 10;
-set y 13;
+set a 4;
+set b 6;
 
-set z (x + y) * 2;out z;
+set c a * b;
+out (c + 3) - 7;
+out (c + 3) - 10;
