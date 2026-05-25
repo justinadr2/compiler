@@ -1,5 +1,5 @@
 #include "lexer.h"
-Lexer::Lexer(string code) : source(code) 
+Lexer::Lexer(string source) : source(source) 
 {
 
 }
@@ -28,11 +28,10 @@ void Lexer::scan()
         start = current;
         char c = advance();
 
-        if (isspace(c)) {
+        if (isspace(c))
             continue; 
-        }
 
-        if (c == ';') 
+        else if (c == ';') 
             tokens.push_back({TokenType::SEMICOLON, ";"});
     
         else if (c == '+') 
@@ -52,6 +51,9 @@ void Lexer::scan()
 
         else if (c == ')')
             tokens.push_back({TokenType::RIGHT_PAREN, ")"});
+
+        else if (c == '=')
+            tokens.push_back({TokenType::EQUAL, "="});
         
         else if (isdigit(c)) 
         {
@@ -69,8 +71,9 @@ void Lexer::scan()
             
             string text = source.substr(start, current - start);
 
-            if (text == "set") 
-                tokens.push_back({TokenType::SET, text});
+            if (text == "byte") 
+                tokens.push_back({TokenType::BYTE, text});
+
             else if (text == "out") 
                 tokens.push_back({TokenType::OUT, text});
             else 

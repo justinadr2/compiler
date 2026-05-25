@@ -9,7 +9,7 @@ enum class ASTNodeType {
     CONSTANT,
     IDENTIFIER,
     BINARY_OP,
-    ASSIGNEMENT
+    ASSIGNMENT
 };
 
 class ASTNode
@@ -34,3 +34,4 @@ public:
 ASTNode* CreateNumberNode(double val);
 ASTNode* CreateOpNode(char op, ASTNode* left, ASTNode* right);
 ASTNode* CreateIdentifierNode(const string& name);
+ASTNode* CreateAssignmentNode(ASTNode* left, ASTNode* right);

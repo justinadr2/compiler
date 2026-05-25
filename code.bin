@@ -1,8 +1,9 @@
 
 
-set a 4;
-set b 6;
+byte what = 4;
 
-set c a * b;
-out (c + 3) - 7;
-out (c + 3) - 10;
+byte yes = 5;
+
+byte idk = what * (yes + 2);
+
+out (idk / 2) - 1;

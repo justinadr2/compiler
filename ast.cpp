@@ -33,6 +33,14 @@ ASTNode* CreateOpNode(char op, ASTNode* left, ASTNode* right)
 ASTNode* CreateIdentifierNode(const string& name)
 {
     ASTNode* node = new ASTNode(ASTNodeType::IDENTIFIER);
-    strncpy(node->data.name, name.c_str(), 63);
+    strncpy(node->data.name, name.c_str(), 31);
+    return node;
+}
+
+ASTNode* CreateAssignmentNode(ASTNode* left, ASTNode* right)
+{
+    ASTNode* node = new ASTNode(ASTNodeType::ASSIGNMENT);
+    node->left = left;
+    node->right = right;
     return node;
 }

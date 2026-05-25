@@ -37,7 +37,7 @@ Token Parser::consume(TokenType type, string msg)
 {
     if (check(type)) 
         return advance();
-    cout << "Parser Error: " << msg << " but found '" << peek().lexme << "'\n";
+    cout << "Parser Error: " << msg << " but found '" << peek().lexeme << "'\n";
     exit(1);
 }
 
@@ -45,17 +45,14 @@ ASTNode* Parser::primary()
 {
     if (check(TokenType::NUMBER))
     {
-        return CreateNumberNode(stod(advance().lexme));
+        return CreateNumberNode(stod(advance().lexeme));
     }
     if (check(TokenType::IDENTIFIER))
     {
-        ASTNode* node = new ASTNode(ASTNodeType::IDENTIFIER);
-        string name = advance().lexme;
-
-        for(size_t i = 0; i < 63 && i < name.length(); i++) 
-            node->data.name[i] = name[i];
-
+        string name = advance().lexeme;
+        ASTNode* node = CreateIdentifierNode(name);
         node->data.name[min(name.length(), (size_t)63)] = '\0';
+
         return node;
     }
     
@@ -67,7 +64,7 @@ ASTNode* Parser::primary()
         return expr;
     }
 
-    cout << "Parser Error: Expected expression but found '" << peek().lexme << "'\n";
+    cout << "Parser Error: Expected expression but found '" << peek().lexeme << "'\n";
     exit(1);
 }
 
@@ -77,7 +74,7 @@ ASTNode* Parser::term()
     while (check(TokenType::STAR) || check(TokenType::SLASH))
     {
         Token opToken = advance();
-        char op = opToken.lexme[0];
+        char op = opToken.lexeme[0];
         ASTNode* right = primary();
         expr = CreateOpNode(op, expr, right);
     }
@@ -90,7 +87,7 @@ ASTNode* Parser::expression()
     while (check(TokenType::PLUS) || check(TokenType::MINUS))
     {
         Token opToken = advance();
-        char op = opToken.lexme[0];
+        char op = opToken.lexeme[0];
         ASTNode* right = term();
         expr = CreateOpNode(op, expr, right);
     }
@@ -101,27 +98,23 @@ void Parser::parseAndExecute()
 {
     while (!isAtEnd()) 
     {
-        if (check(TokenType::SET)) 
+        if (check(TokenType::BYTE)) 
         {
             advance();
             Token var = consume(TokenType::IDENTIFIER, "Expected variable name");
+
+            consume(TokenType::EQUAL, "Expected '=' after variable name");
             
-            ASTNode* left = new ASTNode(ASTNodeType::IDENTIFIER);
-            
-            for (size_t i = 0; i < 63 && i < var.lexme.length(); i++) 
-                left->data.name[i] = var.lexme[i];
-            
-            left->data.name[min(var.lexme.length(), (size_t)63)] = '\0';
+            ASTNode* left = CreateIdentifierNode(var.lexeme);
+            left->data.name[min(var.lexeme.length(), (size_t)31)] = '\0';
 
             ASTNode* right = expression();
             consume(TokenType::SEMICOLON, "Expected ';'");
 
-            ASTNode* stmt = new ASTNode(ASTNodeType::ASSIGNEMENT);
-            stmt->left = left;
-            stmt->right = right;
-            
-            Evaluate(stmt);
-            delete stmt;
+            ASTNode* statement = CreateAssignmentNode(left, right);
+    
+            Evaluate(statement);
+            delete statement;
         }
         else if (check(TokenType::OUT)) 
         {
@@ -135,7 +128,7 @@ void Parser::parseAndExecute()
         }
         else 
         {
-            cout << "Parser Error: Unexpected token " << tokens[current].lexme << "\n";
+            cout << "Parser Error: Unexpected token " << tokens[current].lexeme << "\n";
             exit(1);
         }
     }

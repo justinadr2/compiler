@@ -26,7 +26,7 @@ double Evaluate(ASTNode* node)
         return symbolTable[varname];
     }
 
-    if (node->type == ASTNodeType::ASSIGNEMENT)
+    if (node->type == ASTNodeType::ASSIGNMENT)
     {
         double val = Evaluate(node->right);
         string varname(node->left->data.name);
@@ -48,12 +48,12 @@ double Evaluate(ASTNode* node)
                 if (right_val == 0)
                 {
                     cout << "Fatal error: division by zero\n";
-                    return 1;
+                    exit(1);
                 }
                 return left_val / right_val;
             default:
                 cout << "Unknown operator: " << node->data.op << '\n';
-                return 1;
+                exit(1);
         }
     }
 
