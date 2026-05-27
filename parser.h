@@ -1,6 +1,8 @@
 #pragma once
 
+#include <string>
 #include <vector>
+
 #include "lexer.h"
 #include "ast.h"
 
@@ -13,18 +15,17 @@ public:
     Parser(vector<Token> tokens);
 
     bool isAtEnd();
-
     Token peek();
-
     Token advance();
-
     bool check(TokenType type);
-
     Token consume(TokenType type, string msg);
 
     ASTNode* primary();
     ASTNode* term();
     ASTNode* expression();
 
-    void parseAndExecute();
+    ASTNode* declaration();
+    
+    vector<ASTNode*> parse();
+    
 };

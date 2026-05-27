@@ -7,12 +7,11 @@ using namespace std;
 
 enum class TokenType
 {
-    PLUS, MINUS, STAR, SLASH, SEMICOLON, EQUAL,
-    LEFT_PAREN, RIGHT_PAREN,
+    PLUS, MINUS, STAR, SLASH,
+    EQUAL, SEMICOLON, LEFT_PAREN, RIGHT_PAREN,
     IDENTIFIER, NUMBER,
-
-    BYTE, WORD, DWORD, QWORD,   
-
+    BYTE, WORD, DWORD, QWORD,
+    
     OUT,
     END_OF_FILE
 };

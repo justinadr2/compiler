@@ -23,10 +23,9 @@
     No need to compile to object files, source code -> executable
     
     goals for now:
-        define the keywords and syntax im gonna be using
+        allow declaratin of unintialized variables
         classes for each specific AST node
         functions and entry point
-        local variabless
 
 */
 
@@ -51,6 +50,7 @@
             Variable declaration nodes (type, name)
 */
 
+
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -63,11 +63,12 @@
 #include <intrin.h>
 
 #include "ast.h"
-#include "interpreter.h"
 #include "lexer.h"
 #include "parser.h"
 
 using namespace std;
+
+unordered_map<string, double> symbolTable;
 
 string ReadFile(string filename)
 {
@@ -84,44 +85,19 @@ string ReadFile(string filename)
     return code;
 }
 
-namespace dbg {
-    string TokenTypeToString(TokenType type)
-    {
-        switch (type)
-        {
-            case TokenType::PLUS:        return "PLUS";
-            case TokenType::MINUS:       return "MIN";
-            case TokenType::STAR:        return "STAR";
-            case TokenType::SLASH:       return "SLASH";
-            case TokenType::SEMICOLON:   return "SEMICOLON";
-            case TokenType::EQUAL:       return "EQUAL";
-            case TokenType::IDENTIFIER:  return "IDENTIFIER";
-            case TokenType::NUMBER:      return "NUMBER";
-            case TokenType::LEFT_PAREN:  return "LEFT_PAREN";
-            case TokenType::RIGHT_PAREN: return "RIGHT_PAREN";
-            case TokenType::BYTE:        return "BYTE";
-            case TokenType::WORD:        return "WORD";
-            case TokenType::DWORD:       return "DWORD";
-            case TokenType::QWORD:       return "QWORD";
-            case TokenType::OUT:         return "OUT";
-            case TokenType::END_OF_FILE: return "(END_OF_FILE)";
-            default:                     return "UNKNOWN SYMBOL";
-        }
-    }
-}
-
 int main()
 {
     string code = ReadFile("code.bin");
 
     Lexer lexer(code);
     lexer.scan();
-    
-    for (const Token& token : lexer.tokens) 
-        cout << dbg::TokenTypeToString(token.type) << ": " << token.lexeme << '\n';
-
-    cout << "current: " << lexer.current << '\n';
 
     Parser parser(lexer.tokens);
-    parser.parseAndExecute();
+    vector<ASTNode*> program = parser.parse();
+
+    for (ASTNode* statement : program)
+    {
+        statement->evaluate();
+        delete  statement;
+    }
 }  

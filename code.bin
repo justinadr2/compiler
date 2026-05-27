@@ -1,9 +1,8 @@
 
+byte holy = 4;
 
-byte what = 4;
+byte fucking = 6;
 
-byte yes = 5;
+byte shit = holy * fucking;
 
-byte idk = what * (yes + 2);
-
-out (idk / 2) - 1;
+out (shit / 2) - 3;

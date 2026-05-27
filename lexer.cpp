@@ -30,31 +30,28 @@ void Lexer::scan()
 
         if (isspace(c))
             continue; 
-
-        else if (c == ';') 
-            tokens.push_back({TokenType::SEMICOLON, ";"});
-    
-        else if (c == '+') 
-            tokens.push_back({TokenType::PLUS, "+"});
-    
-        else if (c == '-') 
-            tokens.push_back({TokenType::MINUS, "-"});
-    
-        else if (c == '*') 
-            tokens.push_back({TokenType::STAR, "*"});
-
-        else if (c == '/') 
-            tokens.push_back({TokenType::SLASH, "/"});
-
-        else if (c == '(')
-            tokens.push_back({TokenType::LEFT_PAREN, "("});
-
-        else if (c == ')')
-            tokens.push_back({TokenType::RIGHT_PAREN, ")"});
-
-        else if (c == '=')
-            tokens.push_back({TokenType::EQUAL, "="});
         
+        else if (isalpha(c) || c == '_') 
+        {
+            while (isalnum(peek()) || peek() == '_') 
+                advance();
+            
+            string text = source.substr(start, current - start);
+
+            if (text == "byte")
+                tokens.push_back({TokenType::BYTE, text});
+            else if (text == "word")
+                tokens.push_back({TokenType::WORD, text});
+            else if (text == "dword")
+                tokens.push_back({TokenType::DWORD, text});
+            else if (text == "qword")
+                tokens.push_back({TokenType::QWORD, text});
+            else if (text == "out")
+                tokens.push_back({TokenType::OUT, text});
+            else
+                tokens.push_back({TokenType::IDENTIFIER, text});
+        }
+
         else if (isdigit(c)) 
         {
             while (isdigit(peek())) 
@@ -64,21 +61,22 @@ void Lexer::scan()
             tokens.push_back({TokenType::NUMBER, text});
         }
 
-        else if (isalpha(c) || c == '_') 
-        {
-            while (isalnum(peek()) || peek() == '_') 
-                advance();
-            
-            string text = source.substr(start, current - start);
-
-            if (text == "byte") 
-                tokens.push_back({TokenType::BYTE, text});
-
-            else if (text == "out") 
-                tokens.push_back({TokenType::OUT, text});
-            else 
-                tokens.push_back({TokenType::IDENTIFIER, text});
-        }
+        else if (c == '+') 
+            tokens.push_back({TokenType::PLUS, "+"});
+        else if (c == '-') 
+            tokens.push_back({TokenType::MINUS, "-"});
+        else if (c == '*') 
+            tokens.push_back({TokenType::STAR, "*"});
+        else if (c == '/') 
+            tokens.push_back({TokenType::SLASH, "/"});
+        else if (c == '(')
+            tokens.push_back({TokenType::LEFT_PAREN, "("});
+        else if (c == ')')
+            tokens.push_back({TokenType::RIGHT_PAREN, ")"});
+        else if (c == '=')
+            tokens.push_back({TokenType::EQUAL, "="});
+        else if (c == ';') 
+            tokens.push_back({TokenType::SEMICOLON, ";"});   
     }
     
     tokens.push_back({TokenType::END_OF_FILE, ""});
