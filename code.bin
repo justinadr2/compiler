@@ -13,11 +13,12 @@
 
 byte main()
 {
-    byte x = 4;
+    byte x;
 
-    byte y = 7;
-    byte z = x * y;
-    out (z - 4) / 2;
+    byte y = 3;
 
-    out z * 2 + 9;
+    x = 15;
+
+    byte z = (x * y) / 5 + 8;
+    print(z);
 }

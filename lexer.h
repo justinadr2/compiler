@@ -12,7 +12,7 @@ enum class TokenType
     LEFT_PAREN, RIGHT_PAREN,
     LEFT_BRACE, RIGHT_BRACE,
     ENTRY_POINT, IDENTIFIER, NUMBER,
-    BYTE, OUT,
+    BYTE, PRINT,
     END_OF_FILE
 };
 

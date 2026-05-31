@@ -2,6 +2,49 @@
 
 #include "ast.h"
 
+// for tracking if the symbol is initialized
+class TrackSymbol
+{
+public:
+    vector<pair<string, bool>> vars;
+
+    TrackSymbol() 
+    {
+        vars.push_back({"", false});
+    }
+
+    bool exists(const string& name)
+    {
+        return scan(name) != nullptr;
+    }
+
+    bool initialized(const string& name)
+    {
+        auto var_ptr = scan(name);
+        if (var_ptr)
+            return var_ptr->second;
+        return false;
+    }
+
+    void set_initialized(const string& name)
+    {
+        auto var_ptr = scan(name);
+        if (var_ptr)
+            var_ptr->second = true;
+    }
+
+    pair<string, bool>* scan(const string& name)
+    {
+        for (int i = 0; i < vars.size(); i++)
+        {
+            if (vars[i].first == name)
+                return &vars[i];
+        }
+        return nullptr;
+    }
+} trackSymbol;
+
+
 ASTConstantNode::ASTConstantNode(double val) : val(val) {}
 
 ASTOpNode::ASTOpNode(char op, ASTNode* left, ASTNode* right) : op(op), left(left), right(right) {}
@@ -12,7 +55,12 @@ ASTOpNode::~ASTOpNode()
     delete right;
 }
 
-ASTVariableNode::ASTVariableNode(const string& name) : name(name), initialized(false) {}
+ASTVariableNode::ASTVariableNode(const string& name) : name(name) 
+{
+    if (!trackSymbol.exists(name))
+        trackSymbol.vars.push_back({name, false});
+
+}
 
 ASTAssignmentNode::ASTAssignmentNode(ASTVariableNode* left, ASTNode* right) : left(left), right(right) {}
 
@@ -20,6 +68,12 @@ ASTAssignmentNode::~ASTAssignmentNode()
 {
     delete left;
     delete right;
+}
+
+ASTDeclarationNode::ASTDeclarationNode(const string& name) : name(name) 
+{
+    if (!trackSymbol.exists(name))
+        trackSymbol.vars.push_back({name, false});
 }
 
 ASTPrintNode::ASTPrintNode(ASTNode* expr) : expr(expr) {}
@@ -73,15 +127,30 @@ double ASTVariableNode::evaluate()
         cout << "Fatal error: '" << name << "' is undefined\n";
         exit(1);
     }
-    return symbolTable[name];
+    if (trackSymbol.initialized(name))
+        return symbolTable[name];
+    
+    cout << "Fatal error: initialize '" << name << "' variable first before using\n";
+    exit(1);
 }
 
 double ASTAssignmentNode::evaluate()
 {
-    double val = right->evaluate();
-    symbolTable[left->name] = val;
-    left->initialized = true;
-    return val;
+    if (trackSymbol.exists(left->name))
+    {
+        double val = right->evaluate();
+        trackSymbol.set_initialized(left->name);
+        symbolTable[left->name] = val;
+        return val;
+    }
+    
+    cout << "Fatal error: '" << left->name << "' is undefined\n";
+    exit(1);
+}
+
+double ASTDeclarationNode::evaluate()
+{
+    return 0;
 }
 
 double ASTPrintNode::evaluate()
@@ -118,6 +187,11 @@ ASTNode* CreateVariableNode(const string& name)
 ASTNode* CreateAssignmentNode(ASTVariableNode* left, ASTNode* right)
 {
     return new ASTAssignmentNode(left, right);
+}
+
+ASTNode* CreateDeclarationNode(const string& name)
+{
+    return new ASTDeclarationNode(name);
 }
 
 ASTNode* CreatePrintNode(ASTNode* expr)

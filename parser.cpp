@@ -86,61 +86,67 @@ ASTNode* Parser::expression()
     return expr;
 }
 
+ASTNode* Parser::assign()
+{
+    Token var = advance();
+    consume(TokenType::EQUAL, "Expected '=' after variable name");
+
+    auto left = static_cast<ASTVariableNode*>(CreateVariableNode(var.lexeme));
+    ASTNode* right = expression();
+
+    consume(TokenType::SEMICOLON, "Expected ';' after statement");
+
+    return CreateAssignmentNode(left, right);
+}
+
 ASTNode* Parser::declare()
 {
-    if (check(TokenType::BYTE)) 
-    {
-        advance();
-        if (check(TokenType::IDENTIFIER))
-        {
-            Token var = advance();
-            consume(TokenType::EQUAL, "Expected '=' after variable name");
-            
-            auto left = static_cast<ASTVariableNode*>(CreateVariableNode(var.lexeme));
-            ASTNode* right = expression();
-            
-            consume(TokenType::SEMICOLON, "Expected ';'");
-
-            return CreateAssignmentNode(left, right);
-        }
-        if (check(TokenType::ENTRY_POINT))
-        {
-            advance();
-            consume(TokenType::LEFT_PAREN, "Expected '(' for parameters");
-            consume(TokenType::RIGHT_PAREN, "Expected ')' after parameters");
-            consume(TokenType::LEFT_BRACE, "Expected '{' for function body");
-
-            vector<ASTNode*> statements = this->parseBlock();
-            ASTNode* mainFunction = CreateFunctionNode(statements);
-            consume(TokenType::RIGHT_BRACE, "Expected '}' after function body");
-            return mainFunction;
-        }
-    }
-
+    advance();
     if (check(TokenType::IDENTIFIER))
     {
         Token var = advance();
-        consume(TokenType::EQUAL, "Expected '=' after variable name");
-
-        auto left = static_cast<ASTVariableNode*>(CreateVariableNode(var.lexeme));
-        ASTNode* right = expression();
-
-        consume(TokenType::SEMICOLON, "Expected ';' after statement");
-
-        return CreateAssignmentNode(left, right);
+        
+        if (check(TokenType::EQUAL))
+        {
+            advance();
+            auto left = static_cast<ASTVariableNode*>(CreateVariableNode(var.lexeme));
+            ASTNode* right = expression();
+            
+            consume(TokenType::SEMICOLON, "Expected ';' after statement");
+            return CreateAssignmentNode(left, right);
+        }
+        if (check(TokenType::SEMICOLON))
+        {
+            advance();
+            return CreateDeclarationNode(var.lexeme);
+        }
     }
-    
-    if (check(TokenType::OUT)) 
+    if (check(TokenType::ENTRY_POINT))
     {
         advance();
-        ASTNode* expr = expression();
-        consume(TokenType::SEMICOLON, "Expected ';' after statement");
+        consume(TokenType::LEFT_PAREN, "Expected '(' for parameters");
+        consume(TokenType::RIGHT_PAREN, "Expected ')' after parameters");
+        consume(TokenType::LEFT_BRACE, "Expected '{' for function body");
 
-        return CreatePrintNode(expr);
+        vector<ASTNode*> statements = this->parseBlock();
+        ASTNode* mainFunction = CreateFunctionNode(statements);
+        consume(TokenType::RIGHT_BRACE, "Expected '}' after function body");
+        return mainFunction;
     }
-    
+
     cout << "Parser Error: unexpected token " << peek().lexeme << '\n';
     exit(1);
+}
+
+ASTNode* Parser::printStatement()
+{
+    advance(); 
+    consume(TokenType::LEFT_PAREN, "Expected '(' after function call name");
+    ASTNode* expr = expression();
+    consume(TokenType::RIGHT_PAREN, "Expected ')' to close function parameter");
+    consume(TokenType::SEMICOLON, "Expected ';' after statement");
+
+    return CreatePrintNode(expr);
 }
 
 vector<ASTNode*> Parser::parse() 
@@ -148,7 +154,19 @@ vector<ASTNode*> Parser::parse()
     vector<ASTNode*> statements;
     
     while (!isAtEnd()) 
-        statements.push_back(declare());
+    {
+        if (check(TokenType::BYTE))
+            statements.push_back(declare());
+        else if (check(TokenType::IDENTIFIER))
+            statements.push_back(assign());
+        else if (check(TokenType::PRINT))
+            statements.push_back(printStatement());
+        else
+        {
+            cout << "Fatal error: unexpected token '" << peek().lexeme << "'\n";
+            exit(1);
+        }
+    }
 
     return statements;
 }
@@ -157,7 +175,18 @@ vector<ASTNode*> Parser::parseBlock()
 {
     vector<ASTNode*> statements;
     while (!check(TokenType::RIGHT_BRACE) && !isAtEnd())
-        statements.push_back(declare());
+    {
+        if (check(TokenType::BYTE))
+            statements.push_back(declare());
+        else if (check(TokenType::IDENTIFIER))
+            statements.push_back(assign());
+        else if (check(TokenType::PRINT))
+            statements.push_back(printStatement());
+        else {
+            cout << "Fatal error: unexpected token '" << peek().lexeme << "'\n";
+            exit(1);
+        }
+    }
     
     return statements;
 }

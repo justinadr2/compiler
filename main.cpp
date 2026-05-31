@@ -60,8 +60,6 @@
 #include <vector>
 #include <algorithm>
 
-#include <intrin.h>
-
 #include "ast.h"
 #include "lexer.h"
 #include "parser.h"
@@ -97,11 +95,12 @@ string TokenTypeToString(TokenType type)
         case TokenType::IDENTIFIER:  return "(IDENTIFIER)";
         case TokenType::NUMBER:      return "(NUMBER)";
         case TokenType::BYTE:        return "(BYTE)";
-        case TokenType::OUT:         return "(OUT)";
+        case TokenType::PRINT:       return "(PRINT)";
         case TokenType::END_OF_FILE: return "";
         default:                     return "UNKNOWN SYMBOL";
     }
 }
+
 
 int main()
 {

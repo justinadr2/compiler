@@ -24,9 +24,10 @@ public:
     ASTNode* term();
     ASTNode* expression();
 
+    ASTNode* assign();
     ASTNode* declare();
     
     vector<ASTNode*> parse();
     vector<ASTNode*> parseBlock();
-    
+    ASTNode* printStatement();
 };

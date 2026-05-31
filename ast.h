@@ -46,7 +46,6 @@ class ASTVariableNode : public ASTNode
 {
 public:
     string name;
-    bool initialized;
     
     ASTVariableNode(const string& name);
 
@@ -62,6 +61,14 @@ public:
     ASTAssignmentNode(ASTVariableNode* left, ASTNode* right);
     ~ASTAssignmentNode();
 
+    double evaluate() override;
+};
+
+class ASTDeclarationNode : public ASTNode
+{
+public:
+    string name;
+    ASTDeclarationNode(const string& name);
     double evaluate() override;
 };
 
@@ -89,6 +96,9 @@ public:
 ASTNode* CreateConstantNode(double val);
 ASTNode* CreateOpNode(char op, ASTNode* left, ASTNode* right);
 ASTNode* CreateVariableNode(const string& name);
+
 ASTNode* CreateAssignmentNode(ASTVariableNode* left, ASTNode* right);
+ASTNode* CreateDeclarationNode(const string& name);
+
 ASTNode* CreatePrintNode(ASTNode* expr);
 ASTNode* CreateFunctionNode(vector<ASTNode*>& statements);
