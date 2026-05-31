@@ -56,7 +56,7 @@ void Lexer::scan()
             string number = source.substr(start, current - start);
             tokens.push_back({TokenType::NUMBER, number});
         }
-
+        
         else if (c == '+') 
             tokens.push_back({TokenType::PLUS, "+"});
         else if (c == '-') 
@@ -64,7 +64,15 @@ void Lexer::scan()
         else if (c == '*') 
             tokens.push_back({TokenType::STAR, "*"});
         else if (c == '/') 
-            tokens.push_back({TokenType::SLASH, "/"});
+        {
+            if (source[current] == '/')
+            {
+                while (peek() != 0x0A)
+                    advance();
+            }
+            else
+                tokens.push_back({TokenType::SLASH, "/"});   
+        }
         else if (c == '(')
             tokens.push_back({TokenType::LEFT_PAREN, "("});
         else if (c == ')')

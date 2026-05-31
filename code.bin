@@ -1,11 +1,22 @@
+
+// the goal of this project is purely for practice, not build a fast compiler or invent a new language
+// and because i want to practice my assembly reading skills, what if i just make the keywords using assembly instructions
+
+// byte  = char
+// word  = short
+// dword = int
+// qword = double
+// cmp   = if
+// ret   = return
+
+
+
 byte main()
 {
     byte x = 4;
 
     byte y = 7;
-
     byte z = x * y;
-
     out (z - 4) / 2;
 
     out z * 2 + 9;
