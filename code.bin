@@ -1,8 +1,12 @@
+byte main()
+{
+    byte x = 4;
 
-byte holy = 4;
+    byte y = 7;
 
-byte fucking = 6;
+    byte z = x * y;
 
-byte shit = holy * fucking;
+    out (z - 4) / 2;
 
-out (shit / 2) - 3;
+    out z * 2 + 9;
+}

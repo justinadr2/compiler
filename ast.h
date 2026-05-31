@@ -23,19 +23,22 @@ class ASTConstantNode : public ASTNode
 {
 public:
     double val;
+
     ASTConstantNode(double value);
+    
     double evaluate() override;
 };
 
 class ASTOpNode : public ASTNode
 {
 public:
-    char operation;
+    char op;
     ASTNode* left;
     ASTNode* right;
     
-    ASTOpNode(char operation, ASTNode* left, ASTNode* right);
-    ~ASTOpNode() override;
+    ASTOpNode(char op, ASTNode* left, ASTNode* right);
+    ~ASTOpNode();
+
     double evaluate() override;
 };
 
@@ -46,6 +49,7 @@ public:
     bool initialized;
     
     ASTVariableNode(const string& name);
+
     double evaluate() override;
 };
 
@@ -54,8 +58,10 @@ class ASTAssignmentNode : public ASTNode
 public:
     ASTVariableNode* left;
     ASTNode* right;
+
     ASTAssignmentNode(ASTVariableNode* left, ASTNode* right);
-    ~ASTAssignmentNode() override;
+    ~ASTAssignmentNode();
+
     double evaluate() override;
 };
 
@@ -64,13 +70,25 @@ class ASTPrintNode : public ASTNode
 public:
     ASTNode* expr;
     
-    ASTPrintNode(ASTNode* expression);
-    ~ASTPrintNode() override;
+    ASTPrintNode(ASTNode* expr);
+    ~ASTPrintNode();
     
     double evaluate() override;
+};
+
+class ASTFunctionNode : public ASTNode
+{
+public:
+    vector<ASTNode*> statements;
+    ASTFunctionNode(vector<ASTNode*>& statements);
+
+    double evaluate() override;
+    ~ASTFunctionNode();
 };
 
 ASTNode* CreateConstantNode(double val);
 ASTNode* CreateOpNode(char op, ASTNode* left, ASTNode* right);
 ASTNode* CreateVariableNode(const string& name);
 ASTNode* CreateAssignmentNode(ASTVariableNode* left, ASTNode* right);
+ASTNode* CreatePrintNode(ASTNode* expr);
+ASTNode* CreateFunctionNode(vector<ASTNode*>& statements);

@@ -14,8 +14,8 @@ public:
 
     Parser(vector<Token> tokens);
 
-    bool isAtEnd();
     Token peek();
+    bool isAtEnd();
     Token advance();
     bool check(TokenType type);
     Token consume(TokenType type, string msg);
@@ -24,8 +24,9 @@ public:
     ASTNode* term();
     ASTNode* expression();
 
-    ASTNode* declaration();
+    ASTNode* declare();
     
     vector<ASTNode*> parse();
+    vector<ASTNode*> parseBlock();
     
 };

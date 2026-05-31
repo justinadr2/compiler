@@ -4,7 +4,7 @@
 
 ASTConstantNode::ASTConstantNode(double val) : val(val) {}
 
-ASTOpNode::ASTOpNode(char operation, ASTNode* left, ASTNode* right) : operation(operation), left(left), right(right) {}
+ASTOpNode::ASTOpNode(char op, ASTNode* left, ASTNode* right) : op(op), left(left), right(right) {}
 
 ASTOpNode::~ASTOpNode()
 {
@@ -26,9 +26,16 @@ ASTPrintNode::ASTPrintNode(ASTNode* expr) : expr(expr) {}
 
 ASTPrintNode::~ASTPrintNode()
 { 
-    delete expr; 
+    delete expr;
 }
 
+ASTFunctionNode::ASTFunctionNode(vector<ASTNode*>& statements) : statements(statements) {}
+
+ASTFunctionNode::~ASTFunctionNode()
+{
+    for (ASTNode* statement : statements)
+        delete statement;
+}
 
 
 double ASTConstantNode::evaluate()
@@ -41,7 +48,7 @@ double ASTOpNode::evaluate()
     double left_val = left->evaluate();
     double right_val = right->evaluate();
 
-    switch (operation)
+    switch (op)
     {
         case '+': return left_val + right_val;
         case '-': return left_val - right_val;
@@ -54,7 +61,7 @@ double ASTOpNode::evaluate()
             }
             return left_val / right_val;
         default:
-            cout << "Unknown operator: " << operation << '\n';
+            cout << "Unknown operator: " << op << '\n';
             exit(1);
     }
 }
@@ -84,8 +91,13 @@ double ASTPrintNode::evaluate()
     return val;
 }
 
+double ASTFunctionNode::evaluate()
+{
+    for (ASTNode* statement : statements)
+        statement->evaluate();
 
-
+    return 0; // function exited successfully
+}
 
 
 ASTNode* CreateConstantNode(double val)
@@ -93,9 +105,9 @@ ASTNode* CreateConstantNode(double val)
     return new ASTConstantNode(val);
 }
 
-ASTNode* CreateOpNode(char operation, ASTNode* left, ASTNode* right)
+ASTNode* CreateOpNode(char op, ASTNode* left, ASTNode* right)
 {
-    return new ASTOpNode(operation, left, right);
+    return new ASTOpNode(op, left, right);
 }
 
 ASTNode* CreateVariableNode(const string& name)
@@ -106,4 +118,14 @@ ASTNode* CreateVariableNode(const string& name)
 ASTNode* CreateAssignmentNode(ASTVariableNode* left, ASTNode* right)
 {
     return new ASTAssignmentNode(left, right);
+}
+
+ASTNode* CreatePrintNode(ASTNode* expr)
+{
+    return new ASTPrintNode(expr);
+}
+
+ASTNode* CreateFunctionNode(vector<ASTNode*>& statements)
+{
+    return new ASTFunctionNode(statements);
 }

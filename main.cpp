@@ -11,7 +11,8 @@
 
         Semantic analysis
             type checking
-            scope checking
+            scope resolution
+            function validation
             symbol table
         
         Intermediate representation
@@ -23,9 +24,8 @@
     No need to compile to object files, source code -> executable
     
     goals for now:
-        allow declaratin of unintialized variables
-        classes for each specific AST node
-        functions and entry point
+        allow declaration of unintialized variables
+        custom functions with parameters
 
 */
 
@@ -73,16 +73,34 @@ unordered_map<string, double> symbolTable;
 string ReadFile(string filename)
 {
     ifstream file(filename);
-
     stringstream buffer;
     
     buffer << file.rdbuf();
-
     string code = buffer.str();
 
     file.close();
-
     return code;
+}
+
+string TokenTypeToString(TokenType type)
+{
+    switch (type)
+    {
+        case TokenType::PLUS:        return "(PLUS)";
+        case TokenType::MINUS:       return "(MINUS)";
+        case TokenType::STAR:        return "(STAR)";
+        case TokenType::SLASH:       return "(SLASH)";
+        case TokenType::EQUAL:       return "(EQUAL)";
+        case TokenType::SEMICOLON:   return "(SEMICOLON)";
+        case TokenType::LEFT_PAREN:  return "(LEFT_PAREN)";
+        case TokenType::RIGHT_PAREN: return "(RIGHT_PAREN)";
+        case TokenType::IDENTIFIER:  return "(IDENTIFIER)";
+        case TokenType::NUMBER:      return "(NUMBER)";
+        case TokenType::BYTE:        return "(BYTE)";
+        case TokenType::OUT:         return "(OUT)";
+        case TokenType::END_OF_FILE: return "";
+        default:                     return "UNKNOWN SYMBOL";
+    }
 }
 
 int main()
@@ -91,13 +109,12 @@ int main()
 
     Lexer lexer(code);
     lexer.scan();
-
+    
     Parser parser(lexer.tokens);
     vector<ASTNode*> program = parser.parse();
 
-    for (ASTNode* statement : program)
-    {
-        statement->evaluate();
-        delete  statement;
-    }
+    ASTNode* mainFunction = program[0];
+    
+    mainFunction->evaluate();
+    delete mainFunction;
 }  

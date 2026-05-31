@@ -36,20 +36,16 @@ void Lexer::scan()
             while (isalnum(peek()) || peek() == '_') 
                 advance();
             
-            string text = source.substr(start, current - start);
+            string word = source.substr(start, current - start);
 
-            if (text == "byte")
-                tokens.push_back({TokenType::BYTE, text});
-            else if (text == "word")
-                tokens.push_back({TokenType::WORD, text});
-            else if (text == "dword")
-                tokens.push_back({TokenType::DWORD, text});
-            else if (text == "qword")
-                tokens.push_back({TokenType::QWORD, text});
-            else if (text == "out")
-                tokens.push_back({TokenType::OUT, text});
+            if (word == "byte")
+                tokens.push_back({TokenType::BYTE, word});
+            else if (word == "out")
+                tokens.push_back({TokenType::OUT, word});
+            else if (word == "main")
+                tokens.push_back({TokenType::ENTRY_POINT, word});
             else
-                tokens.push_back({TokenType::IDENTIFIER, text});
+                tokens.push_back({TokenType::IDENTIFIER, word});
         }
 
         else if (isdigit(c)) 
@@ -57,8 +53,8 @@ void Lexer::scan()
             while (isdigit(peek())) 
                 advance();
             
-            string text = source.substr(start, current - start);
-            tokens.push_back({TokenType::NUMBER, text});
+            string number = source.substr(start, current - start);
+            tokens.push_back({TokenType::NUMBER, number});
         }
 
         else if (c == '+') 
@@ -77,6 +73,11 @@ void Lexer::scan()
             tokens.push_back({TokenType::EQUAL, "="});
         else if (c == ';') 
             tokens.push_back({TokenType::SEMICOLON, ";"});   
+        else if (c == '{') 
+            tokens.push_back({TokenType::LEFT_BRACE, "{"});   
+        else if (c == '}') 
+            tokens.push_back({TokenType::RIGHT_BRACE, "}"});   
+        
     }
     
     tokens.push_back({TokenType::END_OF_FILE, ""});
