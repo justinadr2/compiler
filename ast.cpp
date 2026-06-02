@@ -6,12 +6,7 @@
 class TrackSymbol
 {
 public:
-    vector<pair<string, bool>> vars;
-
-    TrackSymbol() 
-    {
-        vars.push_back({"", false});
-    }
+    vector<pair<string, bool>> variables;
 
     bool exists(const string& name)
     {
@@ -35,13 +30,20 @@ public:
 
     pair<string, bool>* scan(const string& name)
     {
-        for (int i = 0; i < vars.size(); i++)
+        for (int i = 0; i < variables.size(); i++)
         {
-            if (vars[i].first == name)
-                return &vars[i];
+            if (variables[i].first == name)
+                return &variables[i];
         }
         return nullptr;
     }
+
+    void push(const string& name)
+    {
+        variables.push_back({name, false});
+        symbolTable[name] = 0;    
+    }
+
 } trackSymbol;
 
 
@@ -55,12 +57,7 @@ ASTOpNode::~ASTOpNode()
     delete right;
 }
 
-ASTVariableNode::ASTVariableNode(const string& name) : name(name) 
-{
-    if (!trackSymbol.exists(name))
-        trackSymbol.vars.push_back({name, false});
-
-}
+ASTVariableNode::ASTVariableNode(const string& name) : name(name) {}
 
 ASTAssignmentNode::ASTAssignmentNode(ASTVariableNode* left, ASTNode* right) : left(left), right(right) {}
 
@@ -70,10 +67,11 @@ ASTAssignmentNode::~ASTAssignmentNode()
     delete right;
 }
 
-ASTDeclarationNode::ASTDeclarationNode(const string& name) : name(name) 
+ASTDeclarationNode::ASTDeclarationNode(const string& name, ASTNode* assignmentExpr) : name(name), assignmentExpr(assignmentExpr) {} 
+
+ASTDeclarationNode::~ASTDeclarationNode()
 {
-    if (!trackSymbol.exists(name))
-        trackSymbol.vars.push_back({name, false});
+    delete assignmentExpr;
 }
 
 ASTPrintNode::ASTPrintNode(ASTNode* expr) : expr(expr) {}
@@ -150,6 +148,18 @@ double ASTAssignmentNode::evaluate()
 
 double ASTDeclarationNode::evaluate()
 {
+    if (trackSymbol.exists(name))
+    {
+        cout << "Fatal error: variable '" << name << "' already exists\n";
+        exit(1);
+    }
+    trackSymbol.push(name);
+    if (assignmentExpr)
+    {
+        double val = assignmentExpr->evaluate();
+        symbolTable[name] = val;
+        trackSymbol.set_initialized(name);
+    }
     return 0;
 }
 
@@ -163,7 +173,9 @@ double ASTPrintNode::evaluate()
 double ASTFunctionNode::evaluate()
 {
     for (ASTNode* statement : statements)
+    {
         statement->evaluate();
+    }
 
     return 0; // function exited successfully
 }
@@ -192,6 +204,11 @@ ASTNode* CreateAssignmentNode(ASTVariableNode* left, ASTNode* right)
 ASTNode* CreateDeclarationNode(const string& name)
 {
     return new ASTDeclarationNode(name);
+}
+
+ASTNode* CreateDeclarationNode(const string& name, ASTNode* assignmentExpr)
+{
+    return new ASTDeclarationNode(name, assignmentExpr);
 }
 
 ASTNode* CreatePrintNode(ASTNode* expr)

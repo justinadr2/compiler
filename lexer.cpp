@@ -67,7 +67,7 @@ void Lexer::scan()
         {
             if (source[current] == '/')
             {
-                while (peek() != 0x0A)
+                while (peek() != 0x0A && !isAtEnd())
                     advance();
             }
             else

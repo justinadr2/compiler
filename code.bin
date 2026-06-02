@@ -9,16 +9,13 @@
 // cmp   = if
 // ret   = return
 
-
-
 byte main()
 {
-    byte x;
+    byte x = 4;
 
-    byte y = 3;
+    byte y = 8;
 
-    x = 15;
+    byte z = ((x * y) - 3 + 5) / 2;
 
-    byte z = (x * y) / 5 + 8;
     print(z);
 }

@@ -68,7 +68,9 @@ class ASTDeclarationNode : public ASTNode
 {
 public:
     string name;
-    ASTDeclarationNode(const string& name);
+    ASTNode* assignmentExpr;
+    ASTDeclarationNode(const string& name, ASTNode* assignmentExpr = nullptr);
+    ~ASTDeclarationNode();
     double evaluate() override;
 };
 
@@ -98,7 +100,10 @@ ASTNode* CreateOpNode(char op, ASTNode* left, ASTNode* right);
 ASTNode* CreateVariableNode(const string& name);
 
 ASTNode* CreateAssignmentNode(ASTVariableNode* left, ASTNode* right);
+
+
 ASTNode* CreateDeclarationNode(const string& name);
+ASTNode* CreateDeclarationNode(const string& name, ASTNode* assignmentExpr);
 
 ASTNode* CreatePrintNode(ASTNode* expr);
 ASTNode* CreateFunctionNode(vector<ASTNode*>& statements);
