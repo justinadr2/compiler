@@ -1,5 +1,5 @@
 #include "lexer.h"
-Lexer::Lexer(string source) : source(source) 
+Lexer::Lexer(string source) : source(source), current()
 {
 
 }

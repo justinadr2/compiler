@@ -27,11 +27,11 @@ class Lexer
 public:
     vector<Token> tokens;
     string source;
-    
-    int current = 0;
+ 
+    int current;
     int start;
 
-    Lexer(string code);
+    Lexer(string source);
 
     bool isAtEnd();
 

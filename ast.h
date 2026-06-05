@@ -3,6 +3,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "builder.h"
+
 extern std::unordered_map<std::string, double> symbolTable;
 
 using namespace std;
@@ -12,98 +14,75 @@ enum class PrimitiveType
     BYTE, WORD, DWORD, QWORD
 };
 
-class ASTNode
+class Node
 {
 public:
-    virtual ~ASTNode() = default;
-    virtual double evaluate() = 0;
+    virtual ~Node() = default;
+    virtual string build(Builder& builder) = 0;
 };
 
-class ASTConstantNode : public ASTNode
+class Constant  : public Node
 {
 public:
     double val;
 
-    ASTConstantNode(double value);
+    Constant(double value);
     
-    double evaluate() override;
+    string build(Builder& bulder) override;
 };
 
-class ASTOpNode : public ASTNode
+class BinaryOp : public Node
 {
 public:
     char op;
-    ASTNode* left;
-    ASTNode* right;
+    Node* left;
+    Node* right;
     
-    ASTOpNode(char op, ASTNode* left, ASTNode* right);
-    ~ASTOpNode();
+    BinaryOp(char op, Node* left, Node* right);
+    ~BinaryOp();
 
-    double evaluate() override;
+    string build(Builder& bulder) override;
 };
 
-class ASTVariableNode : public ASTNode
+class DeclareVariable : public Node
+{
+public:
+    string name;
+    Node* expr;
+    DeclareVariable(string name, Node* expr = nullptr);
+    ~DeclareVariable();
+    string build(Builder& bulder) override;
+};
+
+class GetVariable : public Node
 {
 public:
     string name;
     
-    ASTVariableNode(const string& name);
+    GetVariable(string name);
 
-    double evaluate() override;
+    string build(Builder& bulder) override;
 };
 
-class ASTAssignmentNode : public ASTNode
+class Assignment : public Node
 {
 public:
-    ASTVariableNode* left;
-    ASTNode* right;
+    GetVariable* left;
+    Node* right;
 
-    ASTAssignmentNode(ASTVariableNode* left, ASTNode* right);
-    ~ASTAssignmentNode();
+    Assignment(GetVariable* left, Node* right);
+    ~Assignment();
 
-    double evaluate() override;
+    string build(Builder& bulder) override;
 };
 
-class ASTDeclarationNode : public ASTNode
-{
-public:
-    string name;
-    ASTNode* assignmentExpr;
-    ASTDeclarationNode(const string& name, ASTNode* assignmentExpr = nullptr);
-    ~ASTDeclarationNode();
-    double evaluate() override;
-};
-
-class ASTPrintNode : public ASTNode
-{
-public:
-    ASTNode* expr;
-    
-    ASTPrintNode(ASTNode* expr);
-    ~ASTPrintNode();
-    
-    double evaluate() override;
-};
-
-class ASTFunctionNode : public ASTNode
-{
-public:
-    vector<ASTNode*> statements;
-    ASTFunctionNode(vector<ASTNode*>& statements);
-
-    double evaluate() override;
-    ~ASTFunctionNode();
-};
-
-ASTNode* CreateConstantNode(double val);
-ASTNode* CreateOpNode(char op, ASTNode* left, ASTNode* right);
-ASTNode* CreateVariableNode(const string& name);
-
-ASTNode* CreateAssignmentNode(ASTVariableNode* left, ASTNode* right);
 
 
-ASTNode* CreateDeclarationNode(const string& name);
-ASTNode* CreateDeclarationNode(const string& name, ASTNode* assignmentExpr);
+Node* CreateConstantNode(double val);
+Node* CreateBinaryOpNode(char op, Node* left, Node* right);
 
-ASTNode* CreatePrintNode(ASTNode* expr);
-ASTNode* CreateFunctionNode(vector<ASTNode*>& statements);
+Node* CreateDeclareVariableNode(string name);
+Node* CreateDeclareVariableNode(string name, Node* expr);
+Node* CreateGetVariableNode(string name);
+
+Node* CreateAssignmentNode(GetVariable* left, Node* right);

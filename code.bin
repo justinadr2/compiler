@@ -1,5 +1,5 @@
 
-// the goal of this project is purely for practice, not build a fast compiler or invent a new language
+// the goal of this project is purely for practice, not to build a fast compiler or invent a new language
 // and because i want to practice my assembly reading skills, what if i just make the keywords using assembly instructions
 
 // byte  = char
@@ -8,14 +8,9 @@
 // qword = double
 // cmp   = if
 // ret   = return
+// lea   = pointer
 
-byte main()
-{
-    byte x = 4;
 
-    byte y = 8;
+byte x = 4 * 7;
 
-    byte z = ((x * y) - 3 + 5) / 2;
-
-    print(z);
-}
+byte y = (x / 2) + (x - 2);

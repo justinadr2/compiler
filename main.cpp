@@ -24,8 +24,14 @@
     No need to compile to object files, source code -> executable
     
     goals for now:
-        allow declaration of unintialized variables
         custom functions with parameters
+        FuncDefNode class
+        FuncCallNode class
+        TrackSymbol needs to hold a vector (stack) of maps
+            everytime a function is called, push a fresh, empty map (stack frame)   
+            any new variables and parameters are saved only to the top map
+            when a function finishes, pop the map off the stack
+        
 
 */
 
@@ -63,10 +69,9 @@
 #include "ast.h"
 #include "lexer.h"
 #include "parser.h"
+#include "builder.h"
 
 using namespace std;
-
-unordered_map<string, double> symbolTable;
 
 string ReadFile(string filename)
 {
@@ -92,8 +97,11 @@ string TokenTypeToString(TokenType type)
         case TokenType::SEMICOLON:   return "(SEMICOLON)";
         case TokenType::LEFT_PAREN:  return "(LEFT_PAREN)";
         case TokenType::RIGHT_PAREN: return "(RIGHT_PAREN)";
+        case TokenType::LEFT_BRACE:  return "(LEFT_BRACE)";
+        case TokenType::RIGHT_BRACE: return "(RIGHT_BRACE)";
         case TokenType::IDENTIFIER:  return "(IDENTIFIER)";
         case TokenType::NUMBER:      return "(NUMBER)";
+        case TokenType::ENTRY_POINT: return "(ENTRY_POINT)";
         case TokenType::BYTE:        return "(BYTE)";
         case TokenType::PRINT:       return "(PRINT)";
         case TokenType::END_OF_FILE: return "";
@@ -110,10 +118,17 @@ int main()
     lexer.scan();
     
     Parser parser(lexer.tokens);
-    vector<ASTNode*> program = parser.parse();
+    vector<Node*> program = parser.parse();
 
-    ASTNode* mainFunction = program[0];
+    Builder builder;
+
+    for (Node* statement : program)
+        statement->build(builder);
     
-    mainFunction->evaluate();
-    delete mainFunction;
+    for (auto instruction : builder.instructions)
+        cout << instruction << '\n';
+
+    for (Node* statement : program)
+        delete statement;
+    
 }  

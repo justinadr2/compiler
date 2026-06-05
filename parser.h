@@ -20,14 +20,13 @@ public:
     bool check(TokenType type);
     Token consume(TokenType type, string msg);
 
-    ASTNode* primary();
-    ASTNode* term();
-    ASTNode* expression();
+    Node* primary();
+    Node* term();
+    Node* expression();
 
-    ASTNode* assign();
-    ASTNode* declare();
+    Node* assign();
+    Node* declare();
     
-    vector<ASTNode*> parse();
-    vector<ASTNode*> parseBlock();
-    ASTNode* printStatement();
+    vector<Node*> parse();
+    vector<Node*> parseBlock();
 };

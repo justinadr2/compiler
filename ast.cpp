@@ -2,151 +2,71 @@
 
 #include "ast.h"
 
-// for tracking if the symbol is initialized
+// for tracking if the symbol exists
 class TrackSymbol
 {
 public:
-    vector<pair<string, bool>> variables;
+    vector<string> variables;
 
-    bool exists(const string& name)
+    bool exists(string name)
     {
-        return scan(name) != nullptr;
-    }
-
-    bool initialized(const string& name)
-    {
-        auto var_ptr = scan(name);
-        if (var_ptr)
-            return var_ptr->second;
-        return false;
-    }
-
-    void set_initialized(const string& name)
-    {
-        auto var_ptr = scan(name);
-        if (var_ptr)
-            var_ptr->second = true;
-    }
-
-    pair<string, bool>* scan(const string& name)
-    {
-        for (int i = 0; i < variables.size(); i++)
-        {
-            if (variables[i].first == name)
-                return &variables[i];
-        }
-        return nullptr;
+        return find(variables.begin(), variables.end(), name) != variables.end();
     }
 
     void push(const string& name)
     {
-        variables.push_back({name, false});
-        symbolTable[name] = 0;    
+        variables.push_back(name);
     }
 
 } trackSymbol;
 
 
-ASTConstantNode::ASTConstantNode(double val) : val(val) {}
+Constant::Constant(double val) : val(val) {}
 
-ASTOpNode::ASTOpNode(char op, ASTNode* left, ASTNode* right) : op(op), left(left), right(right) {}
+BinaryOp::BinaryOp(char op, Node* left, Node* right) : op(op), left(left), right(right) {}
 
-ASTOpNode::~ASTOpNode()
+BinaryOp::~BinaryOp()
 {
     delete left;
     delete right;
 }
 
-ASTVariableNode::ASTVariableNode(const string& name) : name(name) {}
+GetVariable::GetVariable(string name) : name(name) {}
 
-ASTAssignmentNode::ASTAssignmentNode(ASTVariableNode* left, ASTNode* right) : left(left), right(right) {}
+Assignment::Assignment(GetVariable* left, Node* right) : left(left), right(right) {}
 
-ASTAssignmentNode::~ASTAssignmentNode()
+Assignment::~Assignment()
 {
     delete left;
     delete right;
 }
 
-ASTDeclarationNode::ASTDeclarationNode(const string& name, ASTNode* assignmentExpr) : name(name), assignmentExpr(assignmentExpr) {} 
+DeclareVariable::DeclareVariable(string name, Node* expr) : name(name), expr(expr) {} 
 
-ASTDeclarationNode::~ASTDeclarationNode()
+DeclareVariable::~DeclareVariable()
 {
-    delete assignmentExpr;
-}
-
-ASTPrintNode::ASTPrintNode(ASTNode* expr) : expr(expr) {}
-
-ASTPrintNode::~ASTPrintNode()
-{ 
     delete expr;
 }
 
-ASTFunctionNode::ASTFunctionNode(vector<ASTNode*>& statements) : statements(statements) {}
 
-ASTFunctionNode::~ASTFunctionNode()
+
+string Constant::build(Builder& builder)
 {
-    for (ASTNode* statement : statements)
-        delete statement;
+    return to_string(val);
 }
 
-
-double ASTConstantNode::evaluate()
+string BinaryOp::build(Builder& builder)
 {
-    return val;
+    string left_val = left->build(builder);
+    string right_val = right->build(builder);
+
+    string reg = builder.get_new_temp();
+    string instruction = reg + " = " + left_val + ' ' + op + ' ' + right_val;
+    builder.emit(instruction);
+    return reg;
 }
 
-double ASTOpNode::evaluate()
-{
-    double left_val = left->evaluate();
-    double right_val = right->evaluate();
-
-    switch (op)
-    {
-        case '+': return left_val + right_val;
-        case '-': return left_val - right_val;
-        case '*': return left_val * right_val;
-        case '/':
-            if (right_val == 0)
-            {
-                cout << "Fatal error: division by zero\n";
-                exit(1);
-            }
-            return left_val / right_val;
-        default:
-            cout << "Unknown operator: " << op << '\n';
-            exit(1);
-    }
-}
-
-double ASTVariableNode::evaluate()
-{
-    if (symbolTable.find(name) == symbolTable.end())
-    {
-        cout << "Fatal error: '" << name << "' is undefined\n";
-        exit(1);
-    }
-    if (trackSymbol.initialized(name))
-        return symbolTable[name];
-    
-    cout << "Fatal error: initialize '" << name << "' variable first before using\n";
-    exit(1);
-}
-
-double ASTAssignmentNode::evaluate()
-{
-    if (trackSymbol.exists(left->name))
-    {
-        double val = right->evaluate();
-        trackSymbol.set_initialized(left->name);
-        symbolTable[left->name] = val;
-        return val;
-    }
-    
-    cout << "Fatal error: '" << left->name << "' is undefined\n";
-    exit(1);
-}
-
-double ASTDeclarationNode::evaluate()
+string DeclareVariable::build(Builder& builder)
 {
     if (trackSymbol.exists(name))
     {
@@ -154,69 +74,66 @@ double ASTDeclarationNode::evaluate()
         exit(1);
     }
     trackSymbol.push(name);
-    if (assignmentExpr)
+    if (expr)
     {
-        double val = assignmentExpr->evaluate();
-        symbolTable[name] = val;
-        trackSymbol.set_initialized(name);
+        string val = expr->build(builder);
+        string instruction = name + " = " + val;
+        builder.emit(instruction);
     }
-    return 0;
+    return name;
 }
 
-double ASTPrintNode::evaluate()
+string GetVariable::build(Builder& builder)
 {
-    double val = expr->evaluate();
-    std::cout << "Out: " << val << "\n";
-    return val;
-}
-
-double ASTFunctionNode::evaluate()
-{
-    for (ASTNode* statement : statements)
+    if (!trackSymbol.exists(name))
     {
-        statement->evaluate();
+        cout << "Fatal error: undeclared variable '" << name << "'\n";
+        exit(1);
     }
+    return name;
+}
 
-    return 0; // function exited successfully
+string Assignment::build(Builder& builder)
+{
+    if (trackSymbol.exists(left->name))
+    {
+        string val = right->build(builder);
+        string instruction = left->name + " = " + val;
+        builder.emit(instruction);
+        return left->name;
+    }
+    cout << "Fatal error: undeclared variable '" << left->name << "'\n";
+    exit(1);
 }
 
 
-ASTNode* CreateConstantNode(double val)
+
+Node* CreateConstantNode(double val)
 {
-    return new ASTConstantNode(val);
+    return new Constant(val);
 }
 
-ASTNode* CreateOpNode(char op, ASTNode* left, ASTNode* right)
+Node* CreateBinaryOpNode(char op, Node* left, Node* right)
 {
-    return new ASTOpNode(op, left, right);
+    return new BinaryOp(op, left, right);
 }
 
-ASTNode* CreateVariableNode(const string& name)
+Node* CreateDeclareVariableNode(string name)
 {
-    return new ASTVariableNode(name);
+    return new DeclareVariable(name);
 }
 
-ASTNode* CreateAssignmentNode(ASTVariableNode* left, ASTNode* right)
+Node* CreateDeclareVariableNode(string name, Node* expr)
 {
-    return new ASTAssignmentNode(left, right);
+    return new DeclareVariable(name, expr);
 }
 
-ASTNode* CreateDeclarationNode(const string& name)
+Node* CreateGetVariableNode(string name)
 {
-    return new ASTDeclarationNode(name);
+    return new GetVariable(name);
 }
 
-ASTNode* CreateDeclarationNode(const string& name, ASTNode* assignmentExpr)
+Node* CreateAssignmentNode(GetVariable* left, Node* right)
 {
-    return new ASTDeclarationNode(name, assignmentExpr);
-}
-
-ASTNode* CreatePrintNode(ASTNode* expr)
-{
-    return new ASTPrintNode(expr);
-}
-
-ASTNode* CreateFunctionNode(vector<ASTNode*>& statements)
-{
-    return new ASTFunctionNode(statements);
+    return new Assignment(left, right);
 }
