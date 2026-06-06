@@ -45,10 +45,10 @@ Token Parser::consume(TokenType type, string msg)
 Node* Parser::primary()
 {
     if (check(TokenType::NUMBER))
-        return CreateConstantNode(stod(advance().lexeme));
+        return new Constant(advance().lexeme);
 
     if (check(TokenType::IDENTIFIER))
-        return CreateGetVariableNode(advance().lexeme);
+        return new GetVariable(advance().lexeme);
 
     if (check(TokenType::LEFT_PAREN))
     {
@@ -69,7 +69,7 @@ Node* Parser::term()
     {
         char op = advance().lexeme[0];
         Node* right = primary();
-        expr = CreateBinaryOpNode(op, expr, right);
+        expr = new BinaryOp(op, expr, right);
     }
     return expr;
 }   
@@ -81,7 +81,7 @@ Node* Parser::expression()
     {
         char op = advance().lexeme[0];
         Node* right = term();
-        expr = CreateBinaryOpNode(op, expr, right);
+        expr = new BinaryOp(op, expr, right);
     }
     return expr;
 }
@@ -91,12 +91,11 @@ Node* Parser::assign()
     string varname = advance().lexeme;
     consume(TokenType::EQUAL, "Expected '=' after variable name");
 
-    auto left = static_cast<GetVariable*>(CreateGetVariableNode(varname));
+    auto left = static_cast<GetVariable*>(new GetVariable(varname));
     Node* right = expression();
 
     consume(TokenType::SEMICOLON, "Expected ';' after statement");
-
-    return CreateAssignmentNode(left, right);
+    return new Assignment(left, right);
 }
 
 Node* Parser::declare()
@@ -112,14 +111,27 @@ Node* Parser::declare()
             Node* right = expression();
             consume(TokenType::SEMICOLON, "Expected ';' after statement");
             
-            return CreateDeclareVariableNode(varname, right);
+            return new DeclareVariable(varname, right);
         }
 
         if (check(TokenType::SEMICOLON))
         {
             advance();
-            return CreateDeclareVariableNode(varname);
+            return new DeclareVariable(varname);
         }
+    }
+
+    if (check(TokenType::ENTRY_POINT))
+    {
+        string funname = advance().lexeme;
+
+        consume(TokenType::LEFT_PAREN, "Expected '(' for function parameter");
+        consume(TokenType::RIGHT_PAREN, "Expected ')' for function parameter");
+        consume(TokenType::LEFT_BRACE, "Expected '{' for function body");
+
+        vector<Node*> block = parseBlock();
+        consume(TokenType::RIGHT_BRACE, "Expected '}' for function body");
+        return new Function(funname, block);
     }
 
     cout << "Parser Error: unexpected token '" << peek().lexeme << "'\n";
@@ -134,10 +146,6 @@ vector<Node*> Parser::parse()
     {
         if (check(TokenType::BYTE))
             program.push_back(declare());
-        
-        else if (check(TokenType::IDENTIFIER))
-            program.push_back(assign());
-
         else
         {
             cout << "Fatal error: unexpected token '" << peek().lexeme << "'\n";
@@ -146,4 +154,22 @@ vector<Node*> Parser::parse()
     }
 
     return program;
+}
+
+vector<Node*> Parser::parseBlock()
+{
+    vector<Node*> block;
+    while (!check(TokenType::RIGHT_BRACE) && !isAtEnd())
+    {
+        if (check(TokenType::BYTE))
+            block.push_back(declare());
+        else if (check(TokenType::IDENTIFIER))
+            block.push_back(assign());
+        else
+        {
+            cout << "Fatal error: unexpected token '" << peek().lexeme << "'\n";
+            exit(1);
+        }
+    }
+    return block;
 }

@@ -14,21 +14,29 @@ enum class PrimitiveType
     BYTE, WORD, DWORD, QWORD
 };
 
+struct TrackSymbol
+{
+    vector<string> variables;
+    bool exists(string name);
+    void push(string name);
+};
+
+
 class Node
 {
 public:
     virtual ~Node() = default;
-    virtual string build(Builder& builder) = 0;
+    virtual string build(Builder& builder, TrackSymbol& tracker) = 0;
 };
 
 class Constant  : public Node
 {
 public:
-    double val;
+    string val;
 
-    Constant(double value);
+    Constant(string value);
     
-    string build(Builder& bulder) override;
+    string build(Builder& bulder, TrackSymbol& tracker) override;
 };
 
 class BinaryOp : public Node
@@ -41,7 +49,7 @@ public:
     BinaryOp(char op, Node* left, Node* right);
     ~BinaryOp();
 
-    string build(Builder& bulder) override;
+    string build(Builder& bulder, TrackSymbol& tracker) override;
 };
 
 class DeclareVariable : public Node
@@ -51,7 +59,7 @@ public:
     Node* expr;
     DeclareVariable(string name, Node* expr = nullptr);
     ~DeclareVariable();
-    string build(Builder& bulder) override;
+    string build(Builder& bulder, TrackSymbol& tracker) override;
 };
 
 class GetVariable : public Node
@@ -61,7 +69,7 @@ public:
     
     GetVariable(string name);
 
-    string build(Builder& bulder) override;
+    string build(Builder& bulder, TrackSymbol& tracker) override;
 };
 
 class Assignment : public Node
@@ -73,16 +81,17 @@ public:
     Assignment(GetVariable* left, Node* right);
     ~Assignment();
 
-    string build(Builder& bulder) override;
+    string build(Builder& bulder, TrackSymbol& tracker) override;
 };
 
+class Function : public Node
+{
+public:
+    string name;
+    vector<Node*> block;
+    Function(string name, vector<Node*>& block);
 
+    string build(Builder& builder, TrackSymbol& tracker) override;
 
-Node* CreateConstantNode(double val);
-Node* CreateBinaryOpNode(char op, Node* left, Node* right);
-
-Node* CreateDeclareVariableNode(string name);
-Node* CreateDeclareVariableNode(string name, Node* expr);
-Node* CreateGetVariableNode(string name);
-
-Node* CreateAssignmentNode(GetVariable* left, Node* right);
+    ~Function();
+};

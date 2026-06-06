@@ -10,7 +10,10 @@
 // ret   = return
 // lea   = pointer
 
+byte main()
+{
+    byte x = 4 + 1;
+    byte y = 3;
 
-byte x = 4 * 7;
-
-byte y = (x / 2) + (x - 2);
+    byte z = (x * y) / 5;
+}

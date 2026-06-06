@@ -114,21 +114,25 @@ int main()
 {
     string code = ReadFile("code.bin");
 
+    Builder builder;
+    TrackSymbol tracker;
+
     Lexer lexer(code);
     lexer.scan();
     
     Parser parser(lexer.tokens);
-    vector<Node*> program = parser.parse();
-
-    Builder builder;
+    vector<Node*> program = parser.parse(); 
 
     for (Node* statement : program)
-        statement->build(builder);
-    
-    for (auto instruction : builder.instructions)
-        cout << instruction << '\n';
+        statement->build(builder, tracker);
+
+    string funname = static_cast<Function*>(program[0])->name;
+
+    cout << funname << " {\n";
+    for (string instr : builder.instructions)
+        cout << "    " << instr << '\n';
+    cout << "}\n";
 
     for (Node* statement : program)
         delete statement;
-    
 }  

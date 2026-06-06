@@ -2,40 +2,23 @@
 
 #include "ast.h"
 
-// for tracking if the symbol exists
-class TrackSymbol
+
+bool TrackSymbol::exists(string name)
 {
-public:
-    vector<string> variables;
+    return find(variables.begin(), variables.end(), name) != variables.end();
+}
 
-    bool exists(string name)
-    {
-        return find(variables.begin(), variables.end(), name) != variables.end();
-    }
-
-    void push(const string& name)
-    {
-        variables.push_back(name);
-    }
-
-} trackSymbol;
+void TrackSymbol::push(string name)
+{
+    variables.push_back(name);
+}
 
 
-Constant::Constant(double val) : val(val) {}
+Constant::Constant(string val) : val(val) {}
 
 BinaryOp::BinaryOp(char op, Node* left, Node* right) : op(op), left(left), right(right) {}
 
 BinaryOp::~BinaryOp()
-{
-    delete left;
-    delete right;
-}
-
-GetVariable::GetVariable(string name) : name(name) {}
-
-Assignment::Assignment(GetVariable* left, Node* right) : left(left), right(right) {}
-
-Assignment::~Assignment()
 {
     delete left;
     delete right;
@@ -48,17 +31,34 @@ DeclareVariable::~DeclareVariable()
     delete expr;
 }
 
+GetVariable::GetVariable(string name) : name(name) {}
 
+Assignment::Assignment(GetVariable* left, Node* right) : left(left), right(right) {}
 
-string Constant::build(Builder& builder)
+Assignment::~Assignment()
 {
-    return to_string(val);
+    delete left;
+    delete right;
 }
 
-string BinaryOp::build(Builder& builder)
+Function::Function(string name, vector<Node*>& block) : name(name), block(block) {}
+
+Function::~Function()
 {
-    string left_val = left->build(builder);
-    string right_val = right->build(builder);
+    for (auto& statement : block)
+        delete statement;
+}
+
+
+string Constant::build(Builder& builder, TrackSymbol& tracker)
+{
+    return val;
+}
+
+string BinaryOp::build(Builder& builder, TrackSymbol& tracker)
+{
+    string left_val = left->build(builder, tracker);
+    string right_val = right->build(builder, tracker);
 
     string reg = builder.get_new_temp();
     string instruction = reg + " = " + left_val + ' ' + op + ' ' + right_val;
@@ -66,26 +66,27 @@ string BinaryOp::build(Builder& builder)
     return reg;
 }
 
-string DeclareVariable::build(Builder& builder)
+string DeclareVariable::build(Builder& builder, TrackSymbol& tracker)
 {
-    if (trackSymbol.exists(name))
+    if (tracker.exists(name))
     {
         cout << "Fatal error: variable '" << name << "' already exists\n";
         exit(1);
     }
-    trackSymbol.push(name);
+
+    tracker.push(name);
     if (expr)
     {
-        string val = expr->build(builder);
+        string val = expr->build(builder, tracker);
         string instruction = name + " = " + val;
         builder.emit(instruction);
     }
     return name;
 }
 
-string GetVariable::build(Builder& builder)
+string GetVariable::build(Builder& builder, TrackSymbol& tracker)
 {
-    if (!trackSymbol.exists(name))
+    if (!tracker.exists(name))
     {
         cout << "Fatal error: undeclared variable '" << name << "'\n";
         exit(1);
@@ -93,12 +94,13 @@ string GetVariable::build(Builder& builder)
     return name;
 }
 
-string Assignment::build(Builder& builder)
+string Assignment::build(Builder& builder, TrackSymbol& tracker)
 {
-    if (trackSymbol.exists(left->name))
+    if (tracker.exists(left->name))
     {
-        string val = right->build(builder);
-        string instruction = left->name + " = " + val;
+        string var = left->build(builder, tracker);
+        string expr = right->build(builder, tracker);
+        string instruction = var + " = " + expr;
         builder.emit(instruction);
         return left->name;
     }
@@ -106,34 +108,11 @@ string Assignment::build(Builder& builder)
     exit(1);
 }
 
-
-
-Node* CreateConstantNode(double val)
+string Function::build(Builder& builder, TrackSymbol& tracker)
 {
-    return new Constant(val);
-}
+    for (auto& statement : block)
+        statement->build(builder, tracker);
 
-Node* CreateBinaryOpNode(char op, Node* left, Node* right)
-{
-    return new BinaryOp(op, left, right);
-}
-
-Node* CreateDeclareVariableNode(string name)
-{
-    return new DeclareVariable(name);
-}
-
-Node* CreateDeclareVariableNode(string name, Node* expr)
-{
-    return new DeclareVariable(name, expr);
-}
-
-Node* CreateGetVariableNode(string name)
-{
-    return new GetVariable(name);
-}
-
-Node* CreateAssignmentNode(GetVariable* left, Node* right)
-{
-    return new Assignment(left, right);
+    builder.emit("ret 0");
+    return "";
 }
