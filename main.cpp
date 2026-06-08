@@ -126,13 +126,16 @@ int main()
     for (Node* statement : program)
         statement->build(builder, tracker);
 
-    string funname = static_cast<Function*>(program[0])->name;
-
-    cout << funname << " {\n";
-    for (string instr : builder.instructions)
-        cout << "    " << instr << '\n';
-    cout << "}\n";
+    for (IRFunction& fun : builder.functions)
+    {
+        cout << fun.name  << " {\n";
+        for (string& instr : fun.instructions)
+            cout << "    " << instr << '\n';
+        
+        cout << "}\n\n";
+    }
 
     for (Node* statement : program)
         delete statement;
+
 }  

@@ -103,7 +103,7 @@ Node* Parser::declare()
     advance();
     if (check(TokenType::IDENTIFIER))
     {
-        string varname = advance().lexeme;
+        string name = advance().lexeme;
         
         if (check(TokenType::EQUAL))
         {
@@ -111,27 +111,25 @@ Node* Parser::declare()
             Node* right = expression();
             consume(TokenType::SEMICOLON, "Expected ';' after statement");
             
-            return new DeclareVariable(varname, right);
+            return new DeclareVariable(name, right);
         }
 
         if (check(TokenType::SEMICOLON))
         {
             advance();
-            return new DeclareVariable(varname);
+            return new DeclareVariable(name);
         }
-    }
 
-    if (check(TokenType::ENTRY_POINT))
-    {
-        string funname = advance().lexeme;
+        if (check(TokenType::LEFT_PAREN))
+        {
+            advance();
+            consume(TokenType::RIGHT_PAREN, "Expected ')' for function parameter");
+            consume(TokenType::LEFT_BRACE, "Expected '{' for function body");
 
-        consume(TokenType::LEFT_PAREN, "Expected '(' for function parameter");
-        consume(TokenType::RIGHT_PAREN, "Expected ')' for function parameter");
-        consume(TokenType::LEFT_BRACE, "Expected '{' for function body");
-
-        vector<Node*> block = parseBlock();
-        consume(TokenType::RIGHT_BRACE, "Expected '}' for function body");
-        return new Function(funname, block);
+            vector<Node*> block = parseBlock();
+            consume(TokenType::RIGHT_BRACE, "Expected '}' for function body");
+            return new Function(name, block);
+        }
     }
 
     cout << "Parser Error: unexpected token '" << peek().lexeme << "'\n";

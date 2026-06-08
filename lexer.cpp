@@ -40,8 +40,6 @@ void Lexer::scan()
 
             if (word == "byte")
                 tokens.push_back({TokenType::BYTE, word});
-            else if (word == "main")
-                tokens.push_back({TokenType::ENTRY_POINT, word});
             else
                 tokens.push_back({TokenType::IDENTIFIER, word});
         }

@@ -10,10 +10,15 @@
 // ret   = return
 // lea   = pointer
 
+byte foo()
+{
+    byte a = 4 * 3;
+    byte b = a / 3;
+}
+
 byte main()
 {
-    byte x = 4 + 1;
-    byte y = 3;
-
-    byte z = (x * y) / 5;
+    byte y = 10 * 4;
+    byte x = y;
+    
 }

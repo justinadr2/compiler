@@ -3,14 +3,31 @@
 #include "ast.h"
 
 
+void TrackSymbol::enter_scope()
+{
+    scope_stack.push_back(vector<string>());
+}
+
+void TrackSymbol::exit_scope()
+{
+    if (!scope_stack.empty())
+        scope_stack.pop_back();
+    
+}
+
 bool TrackSymbol::exists(string name)
 {
-    return find(variables.begin(), variables.end(), name) != variables.end();
+    if (scope_stack.empty())
+        return false;
+    
+    auto& current_scope = scope_stack.back();
+    return find(current_scope.begin(), current_scope.end(), name) != current_scope.end();
 }
 
 void TrackSymbol::push(string name)
 {
-    variables.push_back(name);
+    if (!scope_stack.empty())
+        scope_stack.back().push_back(name);
 }
 
 
@@ -110,9 +127,15 @@ string Assignment::build(Builder& builder, TrackSymbol& tracker)
 
 string Function::build(Builder& builder, TrackSymbol& tracker)
 {
+    builder.start_function(this->name);
+
+    tracker.enter_scope();
+
     for (auto& statement : block)
         statement->build(builder, tracker);
 
     builder.emit("ret 0");
+
+    tracker.exit_scope();
     return "";
 }

@@ -16,6 +16,11 @@ enum class PrimitiveType
 
 struct TrackSymbol
 {
+    vector<vector<string>>  scope_stack;
+
+    void enter_scope();
+    void exit_scope();
+
     vector<string> variables;
     bool exists(string name);
     void push(string name);
